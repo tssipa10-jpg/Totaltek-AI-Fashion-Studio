@@ -22,3 +22,5 @@ export interface GalleryImage extends ImageFile {
 }
 
 export type AspectRatio = '16:9' | '9:16';
+
+export type ImageAspectRatio = '1:1' | '9:16' | '16:9' | '4:3' | '3:4';

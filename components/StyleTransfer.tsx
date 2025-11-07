@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { transferStyle } from '../services/geminiService';
-import { ImageFile, GalleryImage } from '../types';
+import { ImageFile, GalleryImage, ImageAspectRatio } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
 import { HelpTooltip } from './HelpTooltip';
@@ -13,6 +13,7 @@ interface StyleTransferProps {
 export const StyleTransfer: React.FC<StyleTransferProps> = ({ onAddToGallery }) => {
   const [contentImage, setContentImage] = useState<ImageFile | null>(null);
   const [styleImage, setStyleImage] = useState<ImageFile | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('1:1');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<{ url: string; saved: boolean } | null>(null);
@@ -30,7 +31,7 @@ export const StyleTransfer: React.FC<StyleTransferProps> = ({ onAddToGallery }) 
     setError(null);
     setResultImage(null);
     try {
-      const imageUrl = await transferStyle(contentImage, styleImage);
+      const imageUrl = await transferStyle(contentImage, styleImage, aspectRatio);
       setResultImage({ url: imageUrl, saved: false });
     } catch (e) {
       console.error(e);
@@ -38,7 +39,7 @@ export const StyleTransfer: React.FC<StyleTransferProps> = ({ onAddToGallery }) 
     } finally {
       setIsLoading(false);
     }
-  }, [contentImage, styleImage]);
+  }, [contentImage, styleImage, aspectRatio]);
   
   const handleSaveToGallery = () => {
     if (!resultImage || resultImage.saved) return;
@@ -65,6 +66,7 @@ export const StyleTransfer: React.FC<StyleTransferProps> = ({ onAddToGallery }) 
             <ol className="list-decimal list-inside space-y-1 text-gray-300">
               <li>Upload a "Content Image" - this is the subject of your final image.</li>
               <li>Upload a "Style Image" - this is the artwork whose style you want to copy (e.g., a famous painting).</li>
+              <li>Select the desired aspect ratio for the final artwork.</li>
               <li>Click "Transfer Style" to merge them.</li>
             </ol>
           </>
@@ -86,6 +88,27 @@ export const StyleTransfer: React.FC<StyleTransferProps> = ({ onAddToGallery }) 
             onImageChange={setStyleImage}
             allowMultiple={false}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">3. Aspect Ratio</label>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: '1:1', label: 'Square' },
+                { value: '9:16', label: 'Portrait' },
+                { value: '16:9', label: 'Landscape' },
+                { value: '4:3', label: 'Standard' },
+                { value: '3:4', label: 'Vertical' },
+              ] as {value: ImageAspectRatio, label: string}[]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setAspectRatio(value)}
+                  disabled={isLoading}
+                  className={`px-3 py-2 rounded-md font-semibold text-sm transition-colors ${aspectRatio === value ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                >
+                  {label} ({value})
+                </button>
+              ))}
+            </div>
+          </div>
           <button
             onClick={handleGenerate}
             disabled={isLoading || !contentImage || !styleImage}

@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { createOutfit } from '../services/geminiService';
-import { ImageFile, GalleryImage } from '../types';
+import { ImageFile, GalleryImage, ImageAspectRatio } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
 import { HelpTooltip } from './HelpTooltip';
@@ -14,6 +14,7 @@ interface OutfitStudioProps {
 export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo, onAddToGallery }) => {
   const [personImage, setPersonImage] = useState<ImageFile | null>(null);
   const [clothingImages, setClothingImages] = useState<ImageFile[]>([]);
+  const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('9:16');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<{ file: ImageFile; saved: boolean } | null>(null);
@@ -33,7 +34,7 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
     setError(null);
     setResultImage(null);
     try {
-      const imageUrl = await createOutfit(prompt, personImage, clothingImages);
+      const imageUrl = await createOutfit(prompt, personImage, clothingImages, aspectRatio);
       const newImageFile = { base64: imageUrl.split(',')[1], mimeType: 'image/png', name: 'outfit.png' };
       setResultImage({ file: newImageFile, saved: false });
     } catch (e) {
@@ -42,7 +43,7 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
     } finally {
       setIsLoading(false);
     }
-  }, [prompt, personImage, clothingImages]);
+  }, [prompt, personImage, clothingImages, aspectRatio]);
 
   const handleCreateVideo = () => {
     if (resultImage) {
@@ -70,6 +71,7 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
             <ol className="list-decimal list-inside space-y-1 text-gray-300">
               <li>Upload a full-body photo of a person.</li>
               <li>Upload one or more images of clothing items on plain backgrounds.</li>
+              <li>Select your desired aspect ratio.</li>
               <li>Click "Dress Me Up!" to see the AI style the person.</li>
               <li>You can then save the result or use it to generate a video.</li>
             </ol>
@@ -92,6 +94,27 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
             onImageChange={setClothingImages}
             allowMultiple={true}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">3. Select Aspect Ratio</label>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: '1:1', label: 'Square' },
+                { value: '9:16', label: 'Portrait' },
+                { value: '16:9', label: 'Landscape' },
+                { value: '4:3', label: 'Standard' },
+                { value: '3:4', label: 'Vertical' },
+              ] as {value: ImageAspectRatio, label: string}[]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setAspectRatio(value)}
+                  disabled={isLoading}
+                  className={`px-3 py-2 rounded-md font-semibold text-sm transition-colors ${aspectRatio === value ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                >
+                  {label} ({value})
+                </button>
+              ))}
+            </div>
+          </div>
           <button
             onClick={handleGenerate}
             disabled={isLoading || !personImage || clothingImages.length === 0}

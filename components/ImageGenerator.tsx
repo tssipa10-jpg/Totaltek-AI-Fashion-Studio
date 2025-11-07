@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import { enhancePrompt, generateImage } from '../services/geminiService';
 import { Loader } from './Loader';
-import { GalleryImage } from '../types';
+import { GalleryImage, ImageAspectRatio } from '../types';
 import { HelpTooltip } from './HelpTooltip';
 
 interface ImageGeneratorProps {
@@ -11,6 +11,7 @@ interface ImageGeneratorProps {
 
 export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }) => {
   const [prompt, setPrompt] = useState('');
+  const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('1:1');
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
     setError(null);
     setGeneratedImage(null);
     try {
-      const imageUrl = await generateImage(prompt);
+      const imageUrl = await generateImage(prompt, aspectRatio);
       setGeneratedImage({ url: imageUrl, saved: false });
     } catch (e) {
       console.error(e);
@@ -48,7 +49,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
     } finally {
       setIsLoading(false);
     }
-  }, [prompt]);
+  }, [prompt, aspectRatio]);
 
   const handleSaveToGallery = () => {
     if (!generatedImage || generatedImage.saved) return;
@@ -72,6 +73,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
             <p className="font-bold mb-2">How to Generate an Image:</p>
             <ol className="list-decimal list-inside space-y-1 text-gray-300">
               <li>Type a description of the image you want into the text area.</li>
+              <li>Select your desired aspect ratio for the final image.</li>
               <li>(Optional) Click "✨ Enhance Prompt" to let AI improve your description for better results.</li>
               <li>Click "Generate Image" and wait for your creation to appear.</li>
               <li>Hover over the image and click "Save to Gallery" to keep it.</li>
@@ -90,6 +92,27 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
           rows={4}
           disabled={isLoading || isEnhancing}
         />
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
+          <div className="flex flex-wrap gap-2">
+            {([
+              { value: '1:1', label: 'Square' },
+              { value: '9:16', label: 'Portrait' },
+              { value: '16:9', label: 'Landscape' },
+              { value: '4:3', label: 'Standard' },
+              { value: '3:4', label: 'Vertical' },
+            ] as {value: ImageAspectRatio, label: string}[]).map(({ value, label }) => (
+              <button
+                key={value}
+                onClick={() => setAspectRatio(value)}
+                disabled={isLoading || isEnhancing}
+                className={`px-3 py-2 rounded-md font-semibold text-sm transition-colors ${aspectRatio === value ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+              >
+                {label} ({value})
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="flex flex-col sm:flex-row gap-2">
             <button
                 onClick={handleEnhancePrompt}

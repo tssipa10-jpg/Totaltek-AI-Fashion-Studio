@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { editImage } from '../services/geminiService';
-import { ImageFile, GalleryImage } from '../types';
+import { ImageFile, GalleryImage, ImageAspectRatio } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
 import { HelpTooltip } from './HelpTooltip';
@@ -13,6 +13,7 @@ interface ImageEditorProps {
 export const ImageEditor: React.FC<ImageEditorProps> = ({ onAddToGallery }) => {
   const [prompt, setPrompt] = useState('');
   const [inputImage, setInputImage] = useState<ImageFile | null>(null);
+  const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('1:1');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editedImage, setEditedImage] = useState<{ url: string; saved: boolean } | null>(null);
@@ -30,7 +31,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ onAddToGallery }) => {
     setError(null);
     setEditedImage(null);
     try {
-      const imageUrl = await editImage(prompt, inputImage);
+      const imageUrl = await editImage(prompt, inputImage, aspectRatio);
       setEditedImage({ url: imageUrl, saved: false });
     } catch (e) {
       console.error(e);
@@ -38,7 +39,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ onAddToGallery }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [prompt, inputImage]);
+  }, [prompt, inputImage, aspectRatio]);
   
   const handleSaveToGallery = () => {
     if (!editedImage || editedImage.saved) return;
@@ -64,6 +65,7 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ onAddToGallery }) => {
             <ol className="list-decimal list-inside space-y-1 text-gray-300">
               <li>Upload an image using the upload box.</li>
               <li>In the text area, describe the changes you want (e.g., "add sunglasses," "change background to a beach").</li>
+              <li>Select the desired aspect ratio for the final image.</li>
               <li>Click "Apply Edits".</li>
               <li>Save your new creation to the gallery.</li>
             </ol>
@@ -88,6 +90,27 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ onAddToGallery }) => {
             rows={3}
             disabled={isLoading}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Aspect Ratio</label>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: '1:1', label: 'Square' },
+                { value: '9:16', label: 'Portrait' },
+                { value: '16:9', label: 'Landscape' },
+                { value: '4:3', label: 'Standard' },
+                { value: '3:4', label: 'Vertical' },
+              ] as {value: ImageAspectRatio, label: string}[]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setAspectRatio(value)}
+                  disabled={isLoading}
+                  className={`px-3 py-2 rounded-md font-semibold text-sm transition-colors ${aspectRatio === value ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                >
+                  {label} ({value})
+                </button>
+              ))}
+            </div>
+          </div>
           <button
             onClick={handleGenerate}
             disabled={isLoading || !prompt || !inputImage}

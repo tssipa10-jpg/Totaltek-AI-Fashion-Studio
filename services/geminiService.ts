@@ -1,5 +1,5 @@
 import { GoogleGenAI, Modality, GenerateContentResponse, Part } from "@google/genai";
-import { ImageFile, AspectRatio } from '../types';
+import { ImageFile, AspectRatio, ImageAspectRatio } from '../types';
 
 // FIX: Removed conflicting global declaration for window.aistudio.
 // This resolves errors indicating a duplicate or incompatible declaration,
@@ -32,7 +32,7 @@ Respond ONLY with the generated prompt text, without any introductory phrases li
 };
 
 // Text-to-Image Generation
-export const generateImage = async (prompt: string): Promise<string> => {
+export const generateImage = async (prompt: string, aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const response = await ai.models.generateImages({
     model: 'imagen-4.0-generate-001',
@@ -40,7 +40,7 @@ export const generateImage = async (prompt: string): Promise<string> => {
     config: {
       numberOfImages: 1,
       outputMimeType: 'image/jpeg',
-      aspectRatio: '1:1',
+      aspectRatio: aspectRatio,
     },
   });
 
@@ -49,14 +49,14 @@ export const generateImage = async (prompt: string): Promise<string> => {
 };
 
 // Image Editing with Text
-export const editImage = async (prompt: string, image: ImageFile): Promise<string> => {
+export const editImage = async (prompt: string, image: ImageFile, aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash-image',
     contents: {
       parts: [
         { inlineData: { data: image.base64, mimeType: image.mimeType } },
-        { text: `Apply the following edit, ensuring the final result is an ultra-realistic, high-resolution photograph with natural textures: "${prompt}"` },
+        { text: `Apply the following edit, ensuring the final result is an ultra-realistic, high-resolution photograph with natural textures and a ${aspectRatio} aspect ratio: "${prompt}"` },
       ],
     },
     config: {
@@ -73,9 +73,9 @@ export const editImage = async (prompt: string, image: ImageFile): Promise<strin
 };
 
 // Style Transfer
-export const transferStyle = async (contentImage: ImageFile, styleImage: ImageFile): Promise<string> => {
+export const transferStyle = async (contentImage: ImageFile, styleImage: ImageFile, aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  const prompt = `Analyze the artistic style, color palette, and texture from the second image (the style image) and apply it to the first image (the content image). The composition and subject matter of the content image should be preserved. Generate a new image that is a fusion of the content from the first image and the style of the second.`;
+  const prompt = `Analyze the artistic style, color palette, and texture from the second image (the style image) and apply it to the first image (the content image). The composition and subject matter of the content image should be preserved. Generate a new image that is a fusion of the content from the first image and the style of the second, with a ${aspectRatio} aspect ratio.`;
 
   const parts: Part[] = [
     { text: prompt },
@@ -100,11 +100,11 @@ export const transferStyle = async (contentImage: ImageFile, styleImage: ImageFi
 };
 
 // Multi-image "Outfit Studio" generation
-export const createOutfit = async (prompt: string, personImage: ImageFile, clothingImages: ImageFile[]): Promise<string> => {
+export const createOutfit = async (prompt: string, personImage: ImageFile, clothingImages: ImageFile[], aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const parts: Part[] = [
     { text: `You are a professional AI fashion stylist. Your task is to dress the person in the first image with the provided clothing items. 
-The final image must be ultra-realistic, resembling a high-resolution photograph. 
+The final image must be ultra-realistic, resembling a high-resolution photograph with a ${aspectRatio} aspect ratio.
 Pay extreme attention to creating a completely natural human skin texture for the person. 
 The clothing, the person, and the background must blend seamlessly with photographic quality, correct lighting, and shadows.
 Maintain the person's original pose and the background environment.` },
@@ -133,9 +133,9 @@ Maintain the person's original pose and the background environment.` },
 };
 
 // TikTok Shop Creator / Product Scene Generation
-export const createProductScene = async (prompt: string, personImage: ImageFile, productImage: ImageFile): Promise<string> => {
+export const createProductScene = async (prompt: string, personImage: ImageFile, productImage: ImageFile, aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  const systemPrompt = `You are an expert AI art director for e-commerce and social media. Your task is to create a single, ultra-realistic promotional image that looks like a high-resolution photograph.
+  const systemPrompt = `You are an expert AI art director for e-commerce and social media. Your task is to create a single, ultra-realistic promotional image that looks like a high-resolution photograph with a ${aspectRatio} aspect ratio.
 - **Scene:** The scene is described by the user's prompt: "${prompt}".
 - **Actors:** The scene must feature the provided person using the provided product.
 - **Goal:** Combine these elements seamlessly. The final output must be a professional product photograph with completely natural human textures, perfect lighting, shadows, and perspective to make the composition absolutely believable and ready for a high-end advertising campaign on platforms like TikTok Shop or YouTube Shorts.`;

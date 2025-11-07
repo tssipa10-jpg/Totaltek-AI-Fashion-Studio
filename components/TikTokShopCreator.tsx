@@ -1,7 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { createProductScene } from '../services/geminiService';
-import { ImageFile, GalleryImage } from '../types';
+import { ImageFile, GalleryImage, ImageAspectRatio } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
 import { HelpTooltip } from './HelpTooltip';
@@ -15,6 +15,7 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
   const [personImage, setPersonImage] = useState<ImageFile | null>(null);
   const [productImage, setProductImage] = useState<ImageFile | null>(null);
   const [prompt, setPrompt] = useState('');
+  const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('9:16');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<{ file: ImageFile; saved: boolean } | null>(null);
@@ -36,7 +37,7 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
     setError(null);
     setResultImage(null);
     try {
-      const imageUrl = await createProductScene(prompt, personImage, productImage);
+      const imageUrl = await createProductScene(prompt, personImage, productImage, aspectRatio);
       const newImageFile = { base64: imageUrl.split(',')[1], mimeType: 'image/png', name: 'product_scene.png' };
       setResultImage({ file: newImageFile, saved: false });
     } catch (e) {
@@ -45,7 +46,7 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
     } finally {
       setIsLoading(false);
     }
-  }, [prompt, personImage, productImage]);
+  }, [prompt, personImage, productImage, aspectRatio]);
 
   const handleCreateVideo = () => {
     if (resultImage) {
@@ -73,6 +74,7 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
               <li>Upload a photo of a person.</li>
               <li>Upload a photo of your product.</li>
               <li>Describe the scene and how the person should interact with the product.</li>
+              <li>Select the aspect ratio for your scene (9:16 is recommended for TikTok).</li>
               <li>Click "Generate Scene".</li>
               <li>Save the result or send it to the Video Generator to create an ad.</li>
             </ol>
@@ -103,6 +105,27 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
             rows={4}
             disabled={isLoading}
           />
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">4. Select Aspect Ratio</label>
+            <div className="flex flex-wrap gap-2">
+              {([
+                { value: '1:1', label: 'Square' },
+                { value: '9:16', label: 'Portrait' },
+                { value: '16:9', label: 'Landscape' },
+                { value: '4:3', label: 'Standard' },
+                { value: '3:4', label: 'Vertical' },
+              ] as {value: ImageAspectRatio, label: string}[]).map(({ value, label }) => (
+                <button
+                  key={value}
+                  onClick={() => setAspectRatio(value)}
+                  disabled={isLoading}
+                  className={`px-3 py-2 rounded-md font-semibold text-sm transition-colors ${aspectRatio === value ? 'bg-cyan-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                >
+                  {label} ({value})
+                </button>
+              ))}
+            </div>
+          </div>
           <button
             onClick={handleGenerate}
             disabled={isLoading || !personImage || !productImage || !prompt}
