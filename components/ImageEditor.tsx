@@ -4,6 +4,7 @@ import { editImage } from '../services/geminiService';
 import { ImageFile, GalleryImage } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
+import { HelpTooltip } from './HelpTooltip';
 
 interface ImageEditorProps {
   onAddToGallery: (imageData: Omit<GalleryImage, 'id' | 'timestamp'>) => void;
@@ -55,7 +56,20 @@ export const ImageEditor: React.FC<ImageEditorProps> = ({ onAddToGallery }) => {
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
-      <h2 className="text-2xl font-bold text-white">Image Editor</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-bold text-white">Image Editor</h2>
+        <HelpTooltip content={
+          <>
+            <p className="font-bold mb-2">How to Edit an Image:</p>
+            <ol className="list-decimal list-inside space-y-1 text-gray-300">
+              <li>Upload an image using the upload box.</li>
+              <li>In the text area, describe the changes you want (e.g., "add sunglasses," "change background to a beach").</li>
+              <li>Click "Apply Edits".</li>
+              <li>Save your new creation to the gallery.</li>
+            </ol>
+          </>
+        } />
+      </div>
       <p className="text-gray-400">Upload an image and describe the changes you want to make. Powered by Gemini 2.5 Flash Image.</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

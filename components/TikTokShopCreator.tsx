@@ -1,48 +1,51 @@
 
 import React, { useState, useCallback } from 'react';
-import { createOutfit } from '../services/geminiService';
+import { createProductScene } from '../services/geminiService';
 import { ImageFile, GalleryImage } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
 import { HelpTooltip } from './HelpTooltip';
 
-interface OutfitStudioProps {
+interface TikTokShopCreatorProps {
   onImageReadyForVideo: (image: ImageFile) => void;
   onAddToGallery: (imageData: Omit<GalleryImage, 'id' | 'timestamp'>) => void;
 }
 
-export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo, onAddToGallery }) => {
+export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageReadyForVideo, onAddToGallery }) => {
   const [personImage, setPersonImage] = useState<ImageFile | null>(null);
-  const [clothingImages, setClothingImages] = useState<ImageFile[]>([]);
+  const [productImage, setProductImage] = useState<ImageFile | null>(null);
+  const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<{ file: ImageFile; saved: boolean } | null>(null);
-
-  const prompt = `You are a professional AI fashion stylist. Your task is to realistically dress the person in the first image with the clothing items provided in the subsequent images. Maintain the person's pose and the background. The final image should be a high-quality, photorealistic composition.`;
 
   const handleGenerate = useCallback(async () => {
     if (!personImage) {
       setError('Please upload a photo of the person.');
       return;
     }
-    if (clothingImages.length === 0) {
-      setError('Please upload at least one clothing item.');
+    if (!productImage) {
+      setError('Please upload a photo of the product.');
+      return;
+    }
+    if (!prompt) {
+      setError('Please describe the scene.');
       return;
     }
     setIsLoading(true);
     setError(null);
     setResultImage(null);
     try {
-      const imageUrl = await createOutfit(prompt, personImage, clothingImages);
-      const newImageFile = { base64: imageUrl.split(',')[1], mimeType: 'image/png', name: 'outfit.png' };
+      const imageUrl = await createProductScene(prompt, personImage, productImage);
+      const newImageFile = { base64: imageUrl.split(',')[1], mimeType: 'image/png', name: 'product_scene.png' };
       setResultImage({ file: newImageFile, saved: false });
     } catch (e) {
       console.error(e);
-      setError(e instanceof Error ? e.message : 'An unknown error occurred.');
+      setError(e instanceof Error ? e.message : 'An unknown error occurred while creating the scene.');
     } finally {
       setIsLoading(false);
     }
-  }, [prompt, personImage, clothingImages]);
+  }, [prompt, personImage, productImage]);
 
   const handleCreateVideo = () => {
     if (resultImage) {
@@ -54,60 +57,68 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
     if (!resultImage || resultImage.saved) return;
     onAddToGallery({
       ...resultImage.file,
-      prompt: 'Outfit created in StyloSphere Studio',
+      prompt: prompt,
     });
     setResultImage(prev => (prev ? { ...prev, saved: true } : null));
   };
 
-
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
       <div className="flex items-center gap-3">
-        <h2 className="text-2xl font-bold text-white">Outfit Studio</h2>
+        <h2 className="text-2xl font-bold text-white">TikTok Shop Creator</h2>
         <HelpTooltip content={
           <>
-            <p className="font-bold mb-2">How to Create an Outfit:</p>
+            <p className="font-bold mb-2">How to Create a Product Scene:</p>
             <ol className="list-decimal list-inside space-y-1 text-gray-300">
-              <li>Upload a full-body photo of a person.</li>
-              <li>Upload one or more images of clothing items on plain backgrounds.</li>
-              <li>Click "Dress Me Up!" to see the AI style the person.</li>
-              <li>You can then save the result or use it to generate a video.</li>
+              <li>Upload a photo of a person.</li>
+              <li>Upload a photo of your product.</li>
+              <li>Describe the scene and how the person should interact with the product.</li>
+              <li>Click "Generate Scene".</li>
+              <li>Save the result or send it to the Video Generator to create an ad.</li>
             </ol>
           </>
         } />
       </div>
-      <p className="text-gray-400">Upload a photo of a person and some clothing items. The AI will dress the person for you.</p>
+      <p className="text-gray-400">Create compelling product scenes for your e-commerce videos. Combine a person, a product, and a custom scene into a single, professional image.</p>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-6">
           <ImageInput
-            label="1. Upload Photo of Person"
-            id="person-image-upload"
+            label="1. Upload Person Image"
+            id="person-image-tiktok"
             onImageChange={setPersonImage}
             allowMultiple={false}
           />
           <ImageInput
-            label="2. Upload Clothing Items"
-            id="clothing-image-upload"
-            onImageChange={setClothingImages}
-            allowMultiple={true}
+            label="2. Upload Product Image"
+            id="product-image-tiktok"
+            onImageChange={setProductImage}
+            allowMultiple={false}
+          />
+           <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="3. Describe the scene... e.g., A person happily using the product in a modern kitchen with bright, natural lighting."
+            className="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+            rows={4}
+            disabled={isLoading}
           />
           <button
             onClick={handleGenerate}
-            disabled={isLoading || !personImage || clothingImages.length === 0}
+            disabled={isLoading || !personImage || !productImage || !prompt}
             className="w-full bg-cyan-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-cyan-600 disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
           >
-            {isLoading ? 'Styling...' : 'Dress Me Up!'}
+            {isLoading ? 'Generating Scene...' : 'Generate Scene'}
           </button>
         </div>
 
-        <div className="lg:col-span-1 space-y-4">
+        <div className="space-y-4">
           <h3 className="text-lg font-semibold text-white">Result</h3>
           {error && <div className="text-red-400 bg-red-900/50 p-3 rounded-md">{error}</div>}
-          <div className="w-full aspect-[9/16] bg-gray-900 rounded-lg flex items-center justify-center relative group">
-            {isLoading && <Loader message="Creating your look..." />}
-            {resultImage && <img src={`data:${resultImage.file.mimeType};base64,${resultImage.file.base64}`} alt="Final Outfit" className="max-w-full max-h-full object-contain rounded-lg" />}
-            {!isLoading && !resultImage && <p className="text-gray-500 text-center p-4">Your final look will appear here</p>}
+          <div className="w-full aspect-square bg-gray-900 rounded-lg flex items-center justify-center relative group">
+            {isLoading && <Loader message="Directing your scene..." />}
+            {resultImage && <img src={`data:${resultImage.file.mimeType};base64,${resultImage.file.base64}`} alt="Generated product scene" className="max-w-full max-h-full object-contain rounded-lg" />}
+            {!isLoading && !resultImage && <p className="text-gray-500 text-center p-4">Your generated scene will appear here</p>}
             
             {resultImage && (
               <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">

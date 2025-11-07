@@ -3,6 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { enhancePrompt, generateImage } from '../services/geminiService';
 import { Loader } from './Loader';
 import { GalleryImage } from '../types';
+import { HelpTooltip } from './HelpTooltip';
 
 interface ImageGeneratorProps {
   onAddToGallery: (imageData: Omit<GalleryImage, 'id' | 'timestamp'>) => void;
@@ -64,7 +65,20 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
-      <h2 className="text-2xl font-bold text-white">Image Generator</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-bold text-white">Image Generator</h2>
+        <HelpTooltip content={
+          <>
+            <p className="font-bold mb-2">How to Generate an Image:</p>
+            <ol className="list-decimal list-inside space-y-1 text-gray-300">
+              <li>Type a description of the image you want into the text area.</li>
+              <li>(Optional) Click "✨ Enhance Prompt" to let AI improve your description for better results.</li>
+              <li>Click "Generate Image" and wait for your creation to appear.</li>
+              <li>Hover over the image and click "Save to Gallery" to keep it.</li>
+            </ol>
+          </>
+        } />
+      </div>
       <p className="text-gray-400">Enter a simple idea or a detailed prompt. You can use the AI Enhancer to refine your prompt for better results.</p>
       
       <div className="space-y-4">

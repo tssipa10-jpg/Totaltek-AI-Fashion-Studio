@@ -1,6 +1,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { GalleryImage, ImageFile } from '../types';
+import { HelpTooltip } from './HelpTooltip';
 
 interface GalleryProps {
   images: GalleryImage[];
@@ -21,7 +22,10 @@ export const Gallery: React.FC<GalleryProps> = ({ images, onDelete, onSelect }) 
   if (images.length === 0) {
     return (
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg text-center">
-        <h2 className="text-2xl font-bold text-white">My Gallery</h2>
+        <div className="flex items-center justify-center gap-3">
+          <h2 className="text-2xl font-bold text-white">My Gallery</h2>
+          <HelpTooltip content="This is your personal gallery of saved creations. Click on any image to view its details, including the prompt used to create it, or to delete it." />
+        </div>
         <p className="mt-4 text-gray-400">Your gallery is empty. Head over to one of the studios to create and save your first masterpiece!</p>
       </div>
     );
@@ -29,7 +33,10 @@ export const Gallery: React.FC<GalleryProps> = ({ images, onDelete, onSelect }) 
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-white mb-6">My Gallery</h2>
+      <div className="flex items-center gap-3 mb-6">
+        <h2 className="text-2xl font-bold text-white">My Gallery</h2>
+        <HelpTooltip content="This is your personal gallery of saved creations. Click on any image to view its details, including the prompt used to create it, or to delete it." />
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
         {images.map(image => (
           <div

@@ -5,6 +5,7 @@ import { ImageFile, AspectRatio } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
 import { ApiKeySelector } from './ApiKeySelector';
+import { HelpTooltip } from './HelpTooltip';
 
 interface VideoGeneratorProps {
   sourceImage: ImageFile | null;
@@ -60,7 +61,21 @@ export const VideoGenerator: React.FC<VideoGeneratorProps> = ({ sourceImage: ini
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
-      <h2 className="text-2xl font-bold text-white">Video Generator</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-bold text-white">Video Generator</h2>
+        <HelpTooltip content={
+          <>
+            <p className="font-bold mb-2">How to Generate a Video:</p>
+            <ol className="list-decimal list-inside space-y-1 text-gray-300">
+              <li>This tab requires an API key. Select one if prompted.</li>
+              <li>An image from the Outfit Studio may be pre-loaded. If not, upload one.</li>
+              <li>(Optional) Add a prompt to describe the desired motion.</li>
+              <li>Choose an aspect ratio (Landscape or Portrait).</li>
+              <li>Click "Generate Video". This may take a few minutes.</li>
+            </ol>
+          </>
+        } />
+      </div>
       <p className="text-gray-400">Bring your images to life. Generate a short video from an image and an optional prompt. Powered by Veo.</p>
       
       {!apiKeyReady ? (

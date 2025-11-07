@@ -4,6 +4,7 @@ import { transferStyle } from '../services/geminiService';
 import { ImageFile, GalleryImage } from '../types';
 import { ImageInput } from './ImageInput';
 import { Loader } from './Loader';
+import { HelpTooltip } from './HelpTooltip';
 
 interface StyleTransferProps {
   onAddToGallery: (imageData: Omit<GalleryImage, 'id' | 'timestamp'>) => void;
@@ -56,7 +57,19 @@ export const StyleTransfer: React.FC<StyleTransferProps> = ({ onAddToGallery }) 
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
-      <h2 className="text-2xl font-bold text-white">Style Transfer</h2>
+      <div className="flex items-center gap-3">
+        <h2 className="text-2xl font-bold text-white">Style Transfer</h2>
+        <HelpTooltip content={
+          <>
+            <p className="font-bold mb-2">How to Transfer Style:</p>
+            <ol className="list-decimal list-inside space-y-1 text-gray-300">
+              <li>Upload a "Content Image" - this is the subject of your final image.</li>
+              <li>Upload a "Style Image" - this is the artwork whose style you want to copy (e.g., a famous painting).</li>
+              <li>Click "Transfer Style" to merge them.</li>
+            </ol>
+          </>
+        } />
+      </div>
       <p className="text-gray-400">Apply the artistic style from one image to the content of another. Powered by Gemini 2.5 Flash Image.</p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

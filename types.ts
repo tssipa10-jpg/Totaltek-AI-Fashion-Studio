@@ -3,6 +3,7 @@ export enum AppTab {
   OUTFIT_STUDIO = 'Outfit Studio',
   IMAGE_GENERATOR = 'Image Generator',
   IMAGE_EDITOR = 'Image Editor',
+  TIKTOK_SHOP_CREATOR = 'TikTok Shop Creator',
   STYLE_TRANSFER = 'Style Transfer',
   VIDEO_GENERATOR = 'Video Generator',
   GALLERY = 'My Gallery',

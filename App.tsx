@@ -8,6 +8,7 @@ import { ImageEditor } from './components/ImageEditor';
 import { VideoGenerator } from './components/VideoGenerator';
 import { StyleTransfer } from './components/StyleTransfer';
 import { Gallery } from './components/Gallery';
+import { TikTokShopCreator } from './components/TikTokShopCreator';
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AppTab>(AppTab.OUTFIT_STUDIO);
@@ -46,7 +47,7 @@ const App: React.FC = () => {
     setGalleryImages(prev => prev.filter(img => img.id !== id));
   }, []);
 
-  const handleOutfitCreated = useCallback((image: ImageFile) => {
+  const handleImageReadyForVideo = useCallback((image: ImageFile) => {
     setVideoSourceImage(image);
     setActiveTab(AppTab.VIDEO_GENERATOR);
   }, []);
@@ -60,11 +61,13 @@ const App: React.FC = () => {
   const renderActiveTab = () => {
     switch (activeTab) {
       case AppTab.OUTFIT_STUDIO:
-        return <OutfitStudio onOutfitCreated={handleOutfitCreated} onAddToGallery={handleAddToGallery} />;
+        return <OutfitStudio onImageReadyForVideo={handleImageReadyForVideo} onAddToGallery={handleAddToGallery} />;
       case AppTab.IMAGE_GENERATOR:
         return <ImageGenerator onAddToGallery={handleAddToGallery} />;
       case AppTab.IMAGE_EDITOR:
         return <ImageEditor onAddToGallery={handleAddToGallery} />;
+      case AppTab.TIKTOK_SHOP_CREATOR:
+        return <TikTokShopCreator onImageReadyForVideo={handleImageReadyForVideo} onAddToGallery={handleAddToGallery} />;
       case AppTab.STYLE_TRANSFER:
         return <StyleTransfer onAddToGallery={handleAddToGallery} />;
       case AppTab.VIDEO_GENERATOR:
