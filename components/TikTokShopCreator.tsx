@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { createProductScene } from '../services/geminiService';
 import { ImageFile, GalleryImage, ImageAspectRatio } from '../types';
@@ -63,6 +62,16 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
     setResultImage(prev => (prev ? { ...prev, saved: true } : null));
   };
 
+  const handleDownload = () => {
+    if (!resultImage) return;
+    const link = document.createElement('a');
+    link.href = `data:${resultImage.file.mimeType};base64,${resultImage.file.base64}`;
+    link.download = `tiktok_shop_${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
       <div className="flex items-center gap-3">
@@ -76,7 +85,7 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
               <li>Describe the scene and how the person should interact with the product.</li>
               <li>Select the aspect ratio for your scene (9:16 is recommended for TikTok).</li>
               <li>Click "Generate Scene".</li>
-              <li>Save the result or send it to the Video Generator to create an ad.</li>
+              <li>Save the result, download it, or send it to the Video Generator to create an ad.</li>
             </ol>
           </>
         } />
@@ -144,7 +153,13 @@ export const TikTokShopCreator: React.FC<TikTokShopCreatorProps> = ({ onImageRea
             {!isLoading && !resultImage && <p className="text-gray-500 text-center p-4">Your generated scene will appear here</p>}
             
             {resultImage && (
-              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={handleDownload}
+                  className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-transform duration-200 hover:scale-105"
+                >
+                  Download ⬇️
+                </button>
                 <button
                   onClick={handleSaveToGallery}
                   disabled={resultImage.saved}

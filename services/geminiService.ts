@@ -56,11 +56,14 @@ export const editImage = async (prompt: string, image: ImageFile, aspectRatio: I
     contents: {
       parts: [
         { inlineData: { data: image.base64, mimeType: image.mimeType } },
-        { text: `Apply the following edit, ensuring the final result is an ultra-realistic, high-resolution photograph with natural textures and a ${aspectRatio} aspect ratio: "${prompt}"` },
+        { text: `Apply the following edit, ensuring the final result is an ultra-realistic, high-resolution photograph with natural textures: "${prompt}"` },
       ],
     },
     config: {
       responseModalities: [Modality.IMAGE],
+      imageConfig: {
+        aspectRatio: aspectRatio
+      }
     },
   });
 
@@ -75,7 +78,7 @@ export const editImage = async (prompt: string, image: ImageFile, aspectRatio: I
 // Style Transfer
 export const transferStyle = async (contentImage: ImageFile, styleImage: ImageFile, aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  const prompt = `Analyze the artistic style, color palette, and texture from the second image (the style image) and apply it to the first image (the content image). The composition and subject matter of the content image should be preserved. Generate a new image that is a fusion of the content from the first image and the style of the second, with a ${aspectRatio} aspect ratio.`;
+  const prompt = `Analyze the artistic style, color palette, and texture from the second image (the style image) and apply it to the first image (the content image). The composition and subject matter of the content image should be preserved. Generate a new image that is a fusion of the content from the first image and the style of the second.`;
 
   const parts: Part[] = [
     { text: prompt },
@@ -88,6 +91,9 @@ export const transferStyle = async (contentImage: ImageFile, styleImage: ImageFi
     contents: { parts },
     config: {
       responseModalities: [Modality.IMAGE],
+      imageConfig: {
+        aspectRatio: aspectRatio
+      }
     },
   });
 
@@ -104,7 +110,7 @@ export const createOutfit = async (prompt: string, personImage: ImageFile, cloth
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
   const parts: Part[] = [
     { text: `You are a professional AI fashion stylist. Your task is to dress the person in the first image with the provided clothing items. 
-The final image must be ultra-realistic, resembling a high-resolution photograph with a ${aspectRatio} aspect ratio.
+The final image must be ultra-realistic, resembling a high-resolution photograph.
 Pay extreme attention to creating a completely natural human skin texture for the person. 
 The clothing, the person, and the background must blend seamlessly with photographic quality, correct lighting, and shadows.
 Maintain the person's original pose and the background environment.` },
@@ -121,6 +127,9 @@ Maintain the person's original pose and the background environment.` },
     contents: { parts },
     config: {
       responseModalities: [Modality.IMAGE],
+      imageConfig: {
+        aspectRatio: aspectRatio
+      }
     },
   });
 
@@ -135,7 +144,7 @@ Maintain the person's original pose and the background environment.` },
 // TikTok Shop Creator / Product Scene Generation
 export const createProductScene = async (prompt: string, personImage: ImageFile, productImage: ImageFile, aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  const systemPrompt = `You are an expert AI art director for e-commerce and social media. Your task is to create a single, ultra-realistic promotional image that looks like a high-resolution photograph with a ${aspectRatio} aspect ratio.
+  const systemPrompt = `You are an expert AI art director for e-commerce and social media. Your task is to create a single, ultra-realistic promotional image that looks like a high-resolution photograph.
 - **Scene:** The scene is described by the user's prompt: "${prompt}".
 - **Actors:** The scene must feature the provided person using the provided product.
 - **Goal:** Combine these elements seamlessly. The final output must be a professional product photograph with completely natural human textures, perfect lighting, shadows, and perspective to make the composition absolutely believable and ready for a high-end advertising campaign on platforms like TikTok Shop or YouTube Shorts.`;
@@ -153,6 +162,9 @@ export const createProductScene = async (prompt: string, personImage: ImageFile,
     contents: { parts },
     config: {
       responseModalities: [Modality.IMAGE],
+      imageConfig: {
+        aspectRatio: aspectRatio
+      }
     },
   });
 

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { createOutfit } from '../services/geminiService';
 import { ImageFile, GalleryImage, ImageAspectRatio } from '../types';
@@ -60,6 +59,15 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
     setResultImage(prev => (prev ? { ...prev, saved: true } : null));
   };
 
+  const handleDownload = () => {
+    if (!resultImage) return;
+    const link = document.createElement('a');
+    link.href = `data:${resultImage.file.mimeType};base64,${resultImage.file.base64}`;
+    link.download = `outfit_${Date.now()}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
@@ -133,7 +141,13 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
             {!isLoading && !resultImage && <p className="text-gray-500 text-center p-4">Your final look will appear here</p>}
             
             {resultImage && (
-              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  onClick={handleDownload}
+                  className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-transform duration-200 hover:scale-105"
+                >
+                  Download ⬇️
+                </button>
                 <button
                   onClick={handleSaveToGallery}
                   disabled={resultImage.saved}

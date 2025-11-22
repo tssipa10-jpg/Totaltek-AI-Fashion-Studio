@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { enhancePrompt, generateImage } from '../services/geminiService';
 import { Loader } from './Loader';
@@ -63,6 +62,15 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
     setGeneratedImage(prev => (prev ? { ...prev, saved: true } : null));
   };
 
+  const handleDownload = () => {
+    if (!generatedImage) return;
+    const link = document.createElement('a');
+    link.href = generatedImage.url;
+    link.download = `generated_${Date.now()}.jpg`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="bg-gray-800 p-6 rounded-lg shadow-lg space-y-6">
@@ -76,7 +84,7 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
               <li>Select your desired aspect ratio for the final image.</li>
               <li>(Optional) Click "✨ Enhance Prompt" to let AI improve your description for better results.</li>
               <li>Click "Generate Image" and wait for your creation to appear.</li>
-              <li>Hover over the image and click "Save to Gallery" to keep it.</li>
+              <li>Hover over the image to save or download it.</li>
             </ol>
           </>
         } />
@@ -147,7 +155,13 @@ export const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onAddToGallery }
         {!isLoading && !generatedImage && <p className="text-gray-500">Your generated image will appear here</p>}
 
         {generatedImage && (
-          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button
+              onClick={handleDownload}
+              className="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-transform duration-200 hover:scale-105"
+            >
+              Download ⬇️
+            </button>
             <button
               onClick={handleSaveToGallery}
               disabled={generatedImage.saved}
