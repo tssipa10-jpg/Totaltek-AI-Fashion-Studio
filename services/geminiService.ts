@@ -108,12 +108,19 @@ export const transferStyle = async (contentImage: ImageFile, styleImage: ImageFi
 // Multi-image "Outfit Studio" generation
 export const createOutfit = async (prompt: string, personImage: ImageFile, clothingImages: ImageFile[], aspectRatio: ImageAspectRatio): Promise<string> => {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
-  const parts: Part[] = [
-    { text: `You are a professional AI fashion stylist. Your task is to dress the person in the first image with the provided clothing items. 
+
+  let systemInstruction = `You are a professional AI fashion stylist. Your task is to dress the person in the first image with the provided clothing items. 
 The final image must be ultra-realistic, resembling a high-resolution photograph.
 Pay extreme attention to creating a completely natural human skin texture for the person. 
 The clothing, the person, and the background must blend seamlessly with photographic quality, correct lighting, and shadows.
-Maintain the person's original pose and the background environment.` },
+Maintain the person's original pose and the background environment.`;
+
+  if (prompt) {
+    systemInstruction += `\n\nAdditional styling instructions: ${prompt}`;
+  }
+
+  const parts: Part[] = [
+    { text: systemInstruction },
     { text: "This is the person to dress:" },
     { inlineData: { data: personImage.base64, mimeType: personImage.mimeType } },
     { text: "Use these clothing items:" },

@@ -14,11 +14,10 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
   const [personImage, setPersonImage] = useState<ImageFile | null>(null);
   const [clothingImages, setClothingImages] = useState<ImageFile[]>([]);
   const [aspectRatio, setAspectRatio] = useState<ImageAspectRatio>('9:16');
+  const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resultImage, setResultImage] = useState<{ file: ImageFile; saved: boolean } | null>(null);
-
-  const prompt = `You are a professional AI fashion stylist. Your task is to realistically dress the person in the first image with the clothing items provided in the subsequent images. Maintain the person's pose and the background. The final image should be a high-quality, photorealistic composition.`;
 
   const handleGenerate = useCallback(async () => {
     if (!personImage) {
@@ -54,7 +53,7 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
     if (!resultImage || resultImage.saved) return;
     onAddToGallery({
       ...resultImage.file,
-      prompt: 'Outfit created in StyloSphere Studio',
+      prompt: prompt || 'Outfit created in StyloSphere Studio',
     });
     setResultImage(prev => (prev ? { ...prev, saved: true } : null));
   };
@@ -79,6 +78,7 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
             <ol className="list-decimal list-inside space-y-1 text-gray-300">
               <li>Upload a full-body photo of a person.</li>
               <li>Upload one or more images of clothing items on plain backgrounds.</li>
+              <li>(Optional) Describe how the outfit should be worn or specific styling details.</li>
               <li>Select your desired aspect ratio.</li>
               <li>Click "Dress Me Up!" to see the AI style the person.</li>
               <li>You can then save the result or use it to generate a video.</li>
@@ -102,8 +102,22 @@ export const OutfitStudio: React.FC<OutfitStudioProps> = ({ onImageReadyForVideo
             onImageChange={setClothingImages}
             allowMultiple={true}
           />
+          
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">3. Select Aspect Ratio</label>
+            <label htmlFor="outfit-prompt" className="block text-sm font-medium text-gray-300 mb-2">3. Styling Instructions (Optional)</label>
+            <textarea
+              id="outfit-prompt"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="e.g., Tuck the shirt in, roll up the sleeves, add a casual vibe..."
+              className="w-full p-3 bg-gray-700 text-white rounded-md border border-gray-600 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-colors"
+              rows={3}
+              disabled={isLoading}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">4. Select Aspect Ratio</label>
             <div className="flex flex-wrap gap-2">
               {([
                 { value: '1:1', label: 'Square' },
